@@ -39,7 +39,11 @@ export function useNoShow() {
   const [status, setStatus] = useState<RegistrationStatus>("IDLE");
   const [progress, setProgress] = useState<Progress>(null);
   const [error, setError] = useState<string | null>(null);
-  const [receipt, setReceipt] = useState<{ hash: Hex; settled: string } | null>(null);
+  const [receipt, setReceipt] = useState<{
+    hash: Hex;
+    settled: string;
+    blockNumber: bigint | null;
+  } | null>(null);
 
   /** The chain is the source of truth for whether someone is registered. */
   const refresh = useCallback(async () => {
@@ -176,7 +180,13 @@ export function useNoShow() {
           throw new Error(result?.error ?? "Check-in could not be confirmed.");
         }
 
-        setReceipt({ hash, settled: result?.settlement?.amount ?? "0" });
+        setReceipt({
+          hash,
+          settled: result?.settlement?.amount ?? "0",
+          // The route reports the block it mined in; the CommitPill tracks that block
+          // through Proposed -> Voted -> Finalized.
+          blockNumber: result?.blockNumber ? BigInt(result.blockNumber) : null,
+        });
         setStatus("CHECKED_IN");
       } catch (cause) {
         setStatus("REGISTERED");

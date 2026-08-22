@@ -500,3 +500,104 @@
   margin: 0;
   text-align: center;
 }
+
+/* ---- /manage ---- */
+.manageHead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  padding: var(--s-4) 0;
+}
+.statBar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+@media (min-width: 640px) {
+  .statBar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.stat {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.statValue {
+  font-size: var(--t-title-mobile);
+  font-weight: 600;
+  letter-spacing: var(--t-card-ls);
+  line-height: 1;
+}
+.statLabel {
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+.guestList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  overflow: hidden;
+  margin-bottom: var(--s-5);
+}
+.guestList > p {
+  padding: var(--s-5);
+}
+.guestRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.guestRow:last-child {
+  border-bottom: none;
+}
+.guestAddress {
+  flex: 1;
+  color: var(--text);
+}
+.guestHold {
+  color: var(--text-2);
+}
+
+/* ---- commit pill (DESIGN.md §4.13) ---- */
+.commitPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  padding: var(--s-2) var(--s-4);
+  align-self: flex-start;
+}
+.commitDots {
+  display: inline-flex;
+  gap: var(--s-1);
+}
+.commitDot {
+  width: var(--s-2);
+  height: var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--border-strong);
+  transition: background 120ms linear;
+}
+.commitDotOn {
+  background: var(--ok);
+}
+.commitLabel {
+  font-size: var(--t-label);
+  color: var(--text-2);
+}
+.commitMs {
+  color: var(--text-3);
+}

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import type { Hex } from "viem";
+import { CommitPill } from "@/components/CommitPill";
 import { RegistrationCard } from "@/components/RegistrationCard";
 import { Scanner } from "@/components/Scanner";
 import {
@@ -37,8 +38,17 @@ const ConnectButton = dynamic(
  * column desktop layout is the enhancement, not the base.
  */
 export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | null }) {
-  const { isConnected, status, setStatus, progress, error, setError, register, checkIn } =
-    useNoShow();
+  const {
+    isConnected,
+    status,
+    setStatus,
+    progress,
+    error,
+    setError,
+    receipt,
+    register,
+    checkIn,
+  } = useNoShow();
   const [scanning, setScanning] = useState(false);
 
   // A forced state must never touch the chain — `?debug=` is for screenshots.
@@ -85,6 +95,15 @@ export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | n
               progress={progress}
               connected={isConnected || Boolean(debugStatus)}
               viewfinder={scanning ? <Scanner onChallenge={onChallenge} /> : null}
+              commitPill={
+                receipt?.blockNumber ? (
+                  <CommitPill blockNumber={receipt.blockNumber} />
+                ) : debugStatus === "CHECKED_IN" ? (
+                  // No receipt in debug mode, so the pill tracks the live head —
+                  // enough to screenshot the state for the README.
+                  <CommitPill />
+                ) : null
+              }
               onRegister={() => {
                 setError(null);
                 void register();
