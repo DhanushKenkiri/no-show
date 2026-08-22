@@ -79,6 +79,37 @@ export function permit2ApprovalTx() {
   return createPermit2ApprovalTx(MONAD_TESTNET_USDC);
 }
 
+const erc20BalanceAbi = [
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+] as const;
+
+/**
+ * The payer's testnet USDC balance, in 6dp base units.
+ *
+ * Checked before anything is signed. The facilitator verifies the payer can
+ * actually cover the authorised maximum, so a wallet holding no USDC gets rejected
+ * at /verify — and the rejection reads as a vague verification failure rather than
+ * "you have no USDC", which is a miserable thing to debug on a deadline.
+ *
+ * MON is NOT this. MON is the gas token; the hold is denominated in USDC, and the
+ * two are unrelated balances. Testnet USDC comes from https://faucet.circle.com
+ * with Monad Testnet selected.
+ */
+export async function usdcBalance(owner: Address): Promise<bigint> {
+  return publicClient.readContract({
+    address: MONAD_TESTNET_USDC,
+    abi: erc20BalanceAbi,
+    functionName: "balanceOf",
+    args: [owner],
+  });
+}
+
 /**
  * Turn a 402 response body into a signed payment header.
  *

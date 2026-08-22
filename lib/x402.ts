@@ -118,7 +118,14 @@ export async function verifyRegistration(
     paymentRequirements,
   );
 
-  if (!verification.isValid || !verification.payer) return null;
+  if (!verification.isValid || !verification.payer) {
+    // Surface the facilitator's own reason. Swallowing it turns "the payer holds
+    // no USDC" into an unfalsifiable "could not be verified", which is the single
+    // most expensive kind of error message to debug.
+    throw new Error(
+      verification.invalidReason ?? "The facilitator rejected the authorization.",
+    );
+  }
 
   return {
     payer: verification.payer,

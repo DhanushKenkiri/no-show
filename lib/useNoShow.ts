@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Hex } from "viem";
+import { formatUnits, type Hex } from "viem";
 import { useAccount, useWalletClient } from "wagmi";
 import { publicClient } from "@/lib/chain";
 import { CHALLENGE_BLOCKS, EVENT_ID, HOLD_USDC_6DP } from "@/lib/config";
@@ -12,6 +12,7 @@ import {
   needsPermit2Approval,
   permit2ApprovalTx,
   signPaymentHeader,
+  usdcBalance,
 } from "@/lib/x402-client";
 
 /** Map the contract's status byte onto the card's states — DESIGN.md §5. */
@@ -24,6 +25,7 @@ function statusFromChain(status: number): RegistrationStatus {
 
 export type Progress =
   | null
+  | "Checking your USDC balance…"
   | "Checking Permit2 allowance…"
   | "Approve Permit2 (one time)…"
   | "Requesting payment terms…"
@@ -81,6 +83,20 @@ export function useNoShow() {
     setStatus("AUTHORIZING");
 
     try {
+      // 0. Do we hold enough USDC to back the hold at all?
+      //    MON is the gas token and is irrelevant here. Without this check the
+      //    facilitator rejects at /verify and the reason is unrecoverable from
+      //    the response.
+      setProgress("Checking your USDC balance…");
+      const balance = await usdcBalance(address);
+      if (balance < BigInt(HOLD_USDC_6DP)) {
+        throw new Error(
+          `You hold ${formatUnits(balance, 6)} USDC but the hold needs $2. ` +
+            "Note MON is the gas token, not this — claim testnet USDC at " +
+            "faucet.circle.com with Monad Testnet selected.",
+        );
+      }
+
       // 1. Permit2 approval. `upto` is Permit2-only; without this the facilitator
       //    answers 412 PRECONDITION_FAILED. One transaction, once per wallet.
       setProgress("Checking Permit2 allowance…");

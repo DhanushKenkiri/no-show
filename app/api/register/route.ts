@@ -72,14 +72,20 @@ export async function POST(request: Request) {
   let verified;
   try {
     verified = await verifyRegistration(paymentPayload);
-  } catch {
-    // A facilitator rejection is retriable with a fresh authorization. The
-    // canonical x402 response tells a compliant client how to sign it.
-    return paymentRequired(request, "Payment authorization could not be verified.");
+  } catch (cause) {
+    // A facilitator rejection is retriable with a fresh authorization, and the
+    // canonical x402 response tells a compliant client how to sign one. But pass
+    // the actual reason through — the commonest cause by far is that the payer
+    // holds no testnet USDC, and a generic message hides that completely.
+    const reason = cause instanceof Error ? cause.message : "unknown";
+    return paymentRequired(request, `Authorization rejected: ${reason}`);
   }
 
   if (!verified || !isAddress(verified.payer)) {
-    return paymentRequired(request, "Payment authorization is invalid.");
+    return paymentRequired(
+      request,
+      "No payment requirement matched this authorization.",
+    );
   }
 
   const eventId = body.eventId.toLowerCase() as Hex;

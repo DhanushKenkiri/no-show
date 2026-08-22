@@ -1,5 +1,12 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import {
+  IconDiscord,
+  IconGitHub,
+  IconGlobe,
+  IconPin,
+  IconX,
+} from "@/components/Icons";
 
 /**
  * Shell chrome for the event page — DESIGN.md §4 items 1–10.
@@ -54,11 +61,10 @@ export function PresentedBy() {
 export function SocialRow() {
   return (
     <div className="socialRow" aria-label="Social links">
-      {["X", "GitHub", "Discord", "Web"].map((name) => (
-        <span key={name} className="mono">
-          {name}
-        </span>
-      ))}
+      <IconX />
+      <IconGitHub />
+      <IconDiscord />
+      <IconGlobe />
     </div>
   );
 }
@@ -74,7 +80,7 @@ export function HostRow({ avatar, name }: { avatar: string; name: string }) {
       <span className="hostName" style={{ flex: 1 }}>
         {name}
       </span>
-      <span className="mono">X</span>
+      <IconX />
     </div>
   );
 }
@@ -111,8 +117,8 @@ export function DateBlock() {
 export function LocationRow() {
   return (
     <div className="dateRow">
-      <span className="locIcon" aria-hidden>
-        ◎
+      <span className="locIcon">
+        <IconPin />
       </span>
       <span>
         <span className="dateText">Kapil Kavuri Hub ↗</span>
