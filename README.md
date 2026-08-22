@@ -86,6 +86,22 @@ first registration, and it unwraps whenever you want.
 
 ---
 
+##Screenshots
+
+<img width="1920" height="1080" alt="Screenshot (1969)" src="https://github.com/user-attachments/assets/cb84706e-6526-4451-bad4-60ac1d7867f8" />
+Initial platform inspired by luma interface.
+
+<img width="1920" height="1080" alt="Screenshot (1970)" src="https://github.com/user-attachments/assets/7fd7998f-7b1c-4f60-957d-790fb9140502" />
+This image represents the initial checkin using rainbow to connect to wallet.
+
+<img width="1920" height="1080" alt="Screenshot (1975)" src="https://github.com/user-attachments/assets/209e2db9-0968-4da7-8b7c-d976c3e67de3" />
+A Monad block based qr for realtime qr change!
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7f9f26f0-017f-4027-99d2-6c7d9b717a2f" />
+Interface after check in is successful. 
+
+
+
 ## Try it in five minutes
 
 ```bash
