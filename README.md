@@ -12,7 +12,9 @@ window against a code derived from the block number.**
 | Contract | [`0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2`](https://testnet.monadvision.com/address/0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2) |
 | Network | Monad Testnet (10143) |
 | Verification | Sourcify `exact_match` |
-| Live URL | _not deployed yet_ |
+| Live URL | **https://no-show-weld.vercel.app** |
+| Venue display | https://no-show-weld.vercel.app/checkin |
+| Organiser | https://no-show-weld.vercel.app/manage |
 
 ---
 

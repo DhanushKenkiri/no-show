@@ -52,3 +52,5 @@ keygen/
 # Foundry
 contracts/cache/
 .keys/
+
+.vercel
