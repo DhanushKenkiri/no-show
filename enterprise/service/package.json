@@ -1,0 +1,29 @@
+{
+  "name": "@noshow/service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@noshow/adapters": "0.1.0",
+    "@noshow/core": "0.1.0",
+    "@noshow/react": "0.1.0",
+    "@tanstack/react-query": "^5",
+    "next": "15.5.23",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "viem": "^2.55.19",
+    "wagmi": "^2.19.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}
