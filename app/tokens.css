@@ -43,3 +43,25 @@
   --rail:       340px;   /* left column on desktop */
   --col-gap:    56px;
 }
+
+/* type scale — DESIGN.md §2. Here rather than in components so the whole visual
+   pass stays a one-file edit. Sizes are the desktop values; the mobile override
+   for the event title lives with the other responsive rules below. */
+:root {
+  --t-title:        52px;   --t-title-lh:  1.05;  --t-title-ls:  -0.025em;
+  --t-title-mobile: 34px;
+  --t-section:      15px;   --t-section-ls: -0.01em;
+  --t-body:         17px;   --t-body-lh:   1.6;
+  --t-card:         22px;   --t-card-ls:   -0.015em;
+  --t-meta:         15px;   --t-meta-lh:   1.45;
+  --t-label:        13px;   --t-label-lh:  1.4;
+  --t-tile-month:   11px;
+  --t-tile-day:     22px;
+  --t-mono:         13px;
+
+  /* the one line the whole pitch rests on — DESIGN.md §5 */
+  --t-hero-body:    19px;
+
+  --tap-min:        48px;   /* CLAUDE.md: tap targets over 48px */
+  --bar-h:          72px;   /* sticky mobile action bar */
+}

@@ -1,0 +1,440 @@
+/* Event page styles. Tokens only — no literal colour or size lives here.
+   No box-shadow anywhere: structure comes from hairlines and translucent fills. */
+
+/* DESIGN.md §6: cheapest thing that looks right. Static on mobile, and nothing
+   at all on a route that opens the camera. */
+.bg {
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 90% at 50% 45%, var(--accent-soft) 0%, transparent 55%),
+    var(--bg);
+}
+.bg[data-camera="true"] {
+  background: var(--bg);
+}
+
+.page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--s-4) var(--s-8);
+}
+
+/* ---- top nav ---- */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-4) 0;
+  gap: var(--s-4);
+}
+.navLogo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-weight: 600;
+}
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  color: var(--text-2);
+}
+.clock {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+
+/* ---- layout ---- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-6);
+}
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: var(--rail) 1fr;
+    gap: var(--col-gap);
+    align-items: start;
+  }
+  .rail {
+    position: sticky;
+    top: var(--s-5);
+  }
+}
+
+/* ---- primitives ---- */
+.cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  display: block;
+}
+.presentedBy {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.presentedLabel {
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+.orgName {
+  font-size: var(--t-meta);
+  font-weight: 500;
+}
+.pill {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  padding: var(--s-1) var(--s-3);
+  font-size: var(--t-label);
+  color: var(--text-2);
+  background: var(--surface-1);
+}
+.socialRow {
+  display: flex;
+  gap: var(--s-3);
+  color: var(--text-3);
+}
+.socialRow a {
+  color: inherit;
+  display: inline-flex;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--t-section);
+  font-weight: 600;
+  letter-spacing: var(--t-section-ls);
+  color: var(--text-2);
+  margin-top: var(--s-2);
+}
+.sectionHeading::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.hostRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+}
+.hostAvatar {
+  border-radius: var(--r-pill);
+  object-fit: cover;
+}
+.hostName {
+  font-size: var(--t-meta);
+}
+
+.title {
+  font-size: var(--t-title-mobile);
+  font-weight: 700;
+  letter-spacing: var(--t-title-ls);
+  line-height: var(--t-title-lh);
+  margin: 0;
+}
+@media (min-width: 640px) {
+  .title {
+    font-size: var(--t-title);
+  }
+}
+
+.dateBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.dateTile {
+  width: var(--tap-min);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-1);
+  text-align: center;
+  padding: var(--s-1) 0;
+  flex: none;
+}
+.tileMonth {
+  font-size: var(--t-tile-month);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1;
+}
+.tileDay {
+  font-size: var(--t-tile-day);
+  font-weight: 600;
+  line-height: 1;
+}
+.dateText {
+  font-size: var(--t-meta);
+  line-height: var(--t-meta-lh);
+}
+.dateSub {
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+.locIcon {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-1);
+  color: var(--text-2);
+}
+
+.prose {
+  font-size: var(--t-body);
+  line-height: var(--t-body-lh);
+  color: var(--text-2);
+}
+.prose h3 {
+  color: var(--text);
+  font-size: var(--t-meta);
+  margin: var(--s-4) 0 var(--s-2);
+}
+.prose p {
+  margin: 0 0 var(--s-3);
+}
+
+.map {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-solid);
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+.mapPill {
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+}
+
+.footer {
+  display: flex;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  color: var(--text-3);
+  font-size: var(--t-label);
+  padding-top: var(--s-5);
+  margin-top: var(--s-5);
+  border-top: 1px solid var(--border);
+}
+
+/* ---- registration card ---- */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.avatar {
+  border-radius: var(--r-pill);
+  object-fit: cover;
+}
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-label);
+  color: var(--text-2);
+}
+.dot {
+  width: var(--s-2);
+  height: var(--s-2);
+  border-radius: var(--r-pill);
+  background: currentColor;
+  flex: none;
+}
+.live {
+  color: var(--live);
+}
+.ok {
+  color: var(--ok);
+}
+.warn {
+  color: var(--warn);
+}
+
+.cardHeading {
+  font-size: var(--t-card);
+  font-weight: 600;
+  letter-spacing: var(--t-card-ls);
+  margin: 0;
+}
+.cardBody {
+  font-size: var(--t-meta);
+  line-height: var(--t-meta-lh);
+  color: var(--text-2);
+  margin: 0;
+}
+
+/* The single most important string in the app — DESIGN.md §5. */
+.heroBody {
+  font-size: var(--t-hero-body);
+  line-height: var(--t-body-lh);
+  color: var(--text);
+  margin: 0;
+}
+.heroBody strong {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.btn {
+  min-height: var(--tap-min);
+  padding: 0 var(--s-5);
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  font-size: var(--t-meta);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  flex: 1 1 auto;
+}
+.btnAccent {
+  background: var(--accent);
+  color: var(--text);
+}
+.btnLight {
+  background: var(--text);
+  color: var(--text-on-light);
+}
+.btnGhost {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.viewfinder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-solid);
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+  font-size: var(--t-label);
+  overflow: hidden;
+}
+.viewfinder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: var(--t-mono);
+  color: var(--text-3);
+}
+
+.spinner {
+  width: var(--s-4);
+  height: var(--s-4);
+  border-radius: var(--r-pill);
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* ---- sticky mobile action bar (DESIGN.md §3) ---- */
+.stickyBar {
+  display: none;
+}
+@media (max-width: 639px) {
+  .cardActionsInline {
+    display: none;
+  }
+  .stickyBar {
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 20;
+    padding: var(--s-3) var(--s-4);
+    padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom));
+    background: var(--surface-solid);
+    border-top: 1px solid var(--border);
+  }
+  .page {
+    padding-bottom: calc(var(--bar-h) + var(--s-6));
+  }
+}
+
+.debugBanner {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--text-2);
+  padding: var(--s-2) var(--s-3);
+  font-size: var(--t-label);
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.debugBanner a {
+  color: var(--text);
+}

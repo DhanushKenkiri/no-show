@@ -2,9 +2,9 @@
 
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { chain } from "./chain";
-import { WC_PROJECT_ID } from "./config";
+import { WC_PROJECT_ID, WC_PROJECT_ID_MISSING } from "./config";
 
-if (WC_PROJECT_ID === "MISSING_WC_PROJECT_ID" && typeof window !== "undefined") {
+if (WC_PROJECT_ID_MISSING) {
   console.warn(
     "[no-show] NEXT_PUBLIC_WC_PROJECT_ID is not set. Injected wallets will still " +
       "work, but WalletConnect (every mobile wallet) will not. Get one free at " +

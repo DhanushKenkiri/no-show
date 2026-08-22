@@ -38,7 +38,12 @@ one — that is your undo button.
 > `contracts/out/NoShow.sol/NoShow.json` — never hand-written. Plus `scripts/smoke.ts`
 > that prints `currentChallenge()` twice, two seconds apart, so I can see it rotate.
 
-**Then deploy to Vercel immediately.** Camera needs HTTPS. Not at hour five.
+**Then deploy to a host with HTTPS immediately.** Camera needs HTTPS. Not at hour five.
+
+**Status: done.** Contract at `0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2`, Sourcify
+`exact_match`. AWS was evaluated and rejected — the account has no Amplify or App
+Runner access, and plain EC2 gives no TLS, so it was 20–45 minutes for nothing the
+demo can see. Vercel instead. Both paths are written up in DEPLOY.md.
 
 ## 3 — x402 upto register (H1:25–2:25) ← RISKIEST
 > Build `/api/register` using the x402 **upto** scheme per X402.md, and

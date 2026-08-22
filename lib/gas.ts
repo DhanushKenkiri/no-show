@@ -3,27 +3,58 @@
  *
  * WHY THIS FILE EXISTS
  *
- * Monad charges the gas LIMIT, not the gas used: the total deducted from the
- * sender is `value + gas_bid * gas_limit`, and there is no refund of the
- * difference. On Ethereum an over-generous limit is free; here you pay for every
- * unit you reserve. So a limit is a real cost, not a safety margin.
+ * Monad charges the gas LIMIT, not the gas used: the total deducted is
+ * `value + gas_bid * gas_limit`, with no refund of the difference. A limit is a
+ * real cost, not a free safety margin.
  *
- * The consequence is that `eth_estimateGas` must never appear in a user-facing
- * path (CLAUDE.md, "Hard constraints"). It costs a network round trip on a public
- * RPC that rate-limits it to 25 rps, it can fail or return a stale answer under
- * load, and during a live demo that is a hang on the one screen everybody is
- * watching. We measure once, add ~20% headroom, and commit the number.
+ * This was confirmed the hard way on 2026-08-22. A `checkIn` sent with
+ * `--gas-limit 200000` reverted, and the receipt reported `gasUsed: 200000` — the
+ * entire limit consumed and charged for a transaction that did nothing.
  *
- * HOW TO FILL THIS IN
+ * Worse, `eth_estimateGas` is not merely discouraged here, it is unusable.
+ * `cast send` estimates before broadcasting, and that single extra round trip took
+ * long enough that the check-in challenge went stale — three attempts in a row
+ * failed with `StaleChallenge` before the transaction was even signed. The 3-block
+ * window is 1.2 seconds; an estimate round trip does not fit inside it.
  *
- * After the contract is deployed, run the call once against testnet, read the
- * `gasUsed` from the receipt, multiply by 1.2, round up, and record it below with
- * the date it was measured and the contract address it was measured against.
- * Re-measure whenever NoShow.sol is redeployed — a changed storage layout or a
- * changed branch changes the number, and a limit that is now too low reverts
- * out-of-gas mid-demo while still charging the full limit.
+ * MEASUREMENTS
  *
- * Measured against: (not yet deployed)
- * Measured on:      (not yet measured)
+ * Measured against: 0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2 (Monad Testnet)
+ * Measured on:      2026-08-22
+ *
+ *   register  91_543  observed on chain, real transaction, block 55888240
+ *   checkIn   74_382  `forge test --gas-report` max
+ *   finalize  65_382  same, for a single-address batch
+ *   payout    37_259  same, for a single-address batch
+ *
+ * `forge test` reported `register` at 90_813 against 91_543 measured on chain, so
+ * the report runs under 1% light. Limits below are the measurement plus ~20%
+ * headroom, per MONAD.md.
+ *
+ * Re-measure whenever NoShow.sol is redeployed. A limit that has become too low
+ * reverts out-of-gas mid-demo and still charges the full amount.
  */
-export const GAS = {} as const satisfies Record<string, bigint>;
+export const GAS = {
+  /** Attendee-signed. 91_543 measured + 20%. */
+  REGISTER: 110_000n,
+
+  /**
+   * Attendee-signed, and the one that must never be estimated. 74_382 + 20%,
+   * rounded up. Kept tight because the attendee pays this whether it is used
+   * or not.
+   */
+  CHECK_IN: 90_000n,
+
+  /**
+   * Organiser-signed batches. Both loop over addresses, so these are per-call
+   * bases; add PER_ADDRESS for each entry beyond the first.
+   */
+  FINALIZE_BASE: 80_000n,
+  PAYOUT_BASE: 45_000n,
+  PER_ADDRESS: 30_000n,
+} as const satisfies Record<string, bigint>;
+
+/** Gas limit for a batch call over `count` addresses. */
+export function batchGas(base: bigint, count: number): bigint {
+  return base + GAS.PER_ADDRESS * BigInt(Math.max(0, count - 1));
+}

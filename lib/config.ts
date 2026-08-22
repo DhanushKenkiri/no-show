@@ -28,5 +28,13 @@ export const ORGANISER_ADDRESS: Address =
  * silent "no wallets appear" on the deployed site, which is a horrible thing to
  * discover on stage.
  */
+// `||`, deliberately not `??`. An unset variable is undefined, but a variable that
+// is present and blank — `NEXT_PUBLIC_WC_PROJECT_ID=` in .env.local, or an empty
+// field in the Vercel dashboard — is "". `??` passes "" straight through, and
+// RainbowKit then throws "No projectId found" during prerender, which fails the
+// whole build rather than degrading. Ask how I know.
 export const WC_PROJECT_ID =
-  process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "MISSING_WC_PROJECT_ID";
+  process.env.NEXT_PUBLIC_WC_PROJECT_ID || "MISSING_WC_PROJECT_ID";
+
+/** True when no real project id is configured, so the UI can say so out loud. */
+export const WC_PROJECT_ID_MISSING = WC_PROJECT_ID === "MISSING_WC_PROJECT_ID";

@@ -1,13 +1,19 @@
-// Placeholder. The event page is built in Prompt 4 (DESIGN.md §3–§5).
-export default function Home() {
-  return (
-    <main style={{ padding: "var(--s-6)" }}>
-      <h1 style={{ fontSize: "22px", fontWeight: 600, letterSpacing: "-0.015em" }}>
-        No-Show
-      </h1>
-      <p style={{ color: "var(--text-2)", marginTop: "var(--s-3)" }}>
-        Scaffold only. Nothing is wired up yet.
-      </p>
-    </main>
-  );
+import { EventPage } from "@/components/EventPage";
+import { isRegistrationStatus } from "@/lib/registration";
+
+/**
+ * `?debug=<STATE>` forces any RegistrationCard state without running the flow.
+ * It is how all six states get screenshotted for the README at hour 5:30 without
+ * needing the camera, a wallet and a facilitator to all cooperate at once.
+ */
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const raw = Array.isArray(params.debug) ? params.debug[0] : params.debug;
+  const debugStatus = isRegistrationStatus(raw) ? raw : null;
+
+  return <EventPage debugStatus={debugStatus} />;
 }
