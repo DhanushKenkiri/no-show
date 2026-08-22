@@ -10,6 +10,8 @@
     "smoke": "node --experimental-strip-types scripts/smoke.ts"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.11",
+    "@tanstack/react-query": "^5.101.4",
     "@x402/core": "2.22.0",
     "@x402/evm": "2.22.0",
     "@x402/fetch": "2.22.0",
@@ -17,7 +19,8 @@
     "next": "15.5.23",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "viem": "^2.55.19"
+    "viem": "^2.55.19",
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
