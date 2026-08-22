@@ -42,6 +42,11 @@ export const GAS = {
    * Attendee-signed, and the one that must never be estimated. 74_382 + 20%,
    * rounded up. Kept tight because the attendee pays this whether it is used
    * or not.
+   *
+   * Validated on chain: a real checkIn at this exact limit succeeded in block
+   * 55899229. Note that a Monad receipt reports `gasUsed` equal to the LIMIT
+   * rather than the consumption, so the receipt cannot tell you your margin —
+   * a successful transaction at a given limit is the only real evidence.
    */
   CHECK_IN: 90_000n,
 

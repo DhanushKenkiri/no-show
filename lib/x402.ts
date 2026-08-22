@@ -10,15 +10,18 @@ import type {
 } from "@x402/core/types";
 import { UptoEvmScheme } from "@x402/evm/upto/server";
 import { ORGANISER_ADDRESS } from "@/lib/config";
+import {
+  HOLD_PRICE_USDC,
+  MONAD_FACILITATOR_URL,
+  MONAD_X402_NETWORK,
+} from "@/lib/x402-constants";
 
-/** Monad's x402 identifiers. This app deliberately never offers another chain. */
-export const MONAD_X402_NETWORK: Network = "eip155:10143";
-export const MONAD_TESTNET_USDC =
-  "0x534b2f3A21130d7a60830c2Df862319e593943A3";
-export const MONAD_FACILITATOR_URL = "https://x402-facilitator.molandak.org";
-
-/** A registration is a $2 maximum, not a $2 payment. */
-export const HOLD_PRICE_USDC = 2;
+export {
+  MONAD_X402_NETWORK,
+  MONAD_TESTNET_USDC,
+  MONAD_FACILITATOR_URL,
+  HOLD_PRICE_USDC,
+} from "@/lib/x402-constants";
 
 /**
  * The authorization must last through the event and its organizer finalization.

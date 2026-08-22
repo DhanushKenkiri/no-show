@@ -1,4 +1,4 @@
-import type { Address } from "viem";
+import { keccak256, toHex, type Address } from "viem";
 
 /**
  * The organiser account.
@@ -38,3 +38,45 @@ export const WC_PROJECT_ID =
 
 /** True when no real project id is configured, so the UI can say so out loud. */
 export const WC_PROJECT_ID_MISSING = WC_PROJECT_ID === "MISSING_WC_PROJECT_ID";
+
+/**
+ * The event this build demos. A bytes32 id, derived so the client, the server and
+ * scripts/smoke.ts can never disagree about which event they are talking about.
+ *
+ * The venue display derives the challenge from this plus the block number, exactly
+ * as NoShow.currentChallenge does, so no contract read is needed per block.
+ */
+export const EVENT_ID = keccak256(toHex("monad-blitz-hyderabad-v3"));
+
+/** Must match CHALLENGE_BLOCKS in NoShow.sol. At ~400ms blocks this is 1.2s. */
+export const CHALLENGE_BLOCKS = 3n;
+
+/**
+ * How many windows ahead the venue display shows.
+ *
+ * This exists because of a measured fact, not a preference. A check-in sent from
+ * Hyderabad with no gas estimation, a pre-warmed nonce and a local key that signs
+ * instantly still mined THREE blocks after the block its challenge was derived
+ * from — and the window is three blocks wide, so it reverted StaleChallenge with
+ * the full gas limit charged. All three public RPCs measure 275-300ms round trip,
+ * so there is no faster endpoint to escape to.
+ *
+ * Showing the next window fixes it exactly. A scan during window `w` produces a
+ * transaction that mines around three blocks later, which is precisely window
+ * `w + 1`. The contract is unchanged and still only accepts a three-block window;
+ * the display is simply aiming at the window the transaction will actually land in.
+ *
+ * Tune with NEXT_PUBLIC_VENUE_LEAD if the venue's network is faster or slower —
+ * `0` reverts to showing the live window.
+ */
+export const VENUE_LEAD_WINDOWS = BigInt(
+  process.env.NEXT_PUBLIC_VENUE_LEAD || "1",
+);
+
+/**
+ * $2.00 at USDC's 6 decimals. Must match HOLD_PRICE_USDC in lib/x402.ts.
+ *
+ * A `number`, not a bigint: NoShow.register takes `uint40`, and viem maps integer
+ * types narrower than 48 bits to `number` because they fit exactly.
+ */
+export const HOLD_USDC_6DP = 2_000_000;

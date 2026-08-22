@@ -2,22 +2,24 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
-
+import { useCallback, useState } from "react";
+import type { Hex } from "viem";
 import { RegistrationCard } from "@/components/RegistrationCard";
-import { REGISTRATION_STATES, type RegistrationStatus } from "@/lib/registration";
+import { Scanner } from "@/components/Scanner";
 import {
   AboutSection,
   CoverImage,
+  DateBlock,
   EventTitle,
   Footer,
   HostsSection,
-  DateBlock,
   LocationSection,
   PresentedBy,
   SocialRow,
   TopNav,
 } from "@/components/Shell";
+import { REGISTRATION_STATES, type RegistrationStatus } from "@/lib/registration";
+import { useNoShow } from "@/lib/useNoShow";
 
 // RainbowKit's ConnectButton reaches for browser globals as it loads, which crashes
 // the prerender of this route. It is a wallet button: there is nothing useful to
@@ -27,7 +29,6 @@ const ConnectButton = dynamic(
   { ssr: false, loading: () => <span className="pill">Connect Wallet</span> },
 );
 
-
 /**
  * The event page — DESIGN.md §3.
  *
@@ -36,11 +37,24 @@ const ConnectButton = dynamic(
  * column desktop layout is the enhancement, not the base.
  */
 export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | null }) {
-  const [status, setStatus] = useState<RegistrationStatus>("IDLE");
-  const effective = debugStatus ?? status;
+  const { isConnected, status, setStatus, progress, error, setError, register, checkIn } =
+    useNoShow();
+  const [scanning, setScanning] = useState(false);
+
+  // A forced state must never touch the chain — `?debug=` is for screenshots.
+  const effective: RegistrationStatus = debugStatus ?? (scanning ? "SCANNING" : status);
+
+  const onChallenge = useCallback(
+    (challenge: Hex) => {
+      setScanning(false);
+      void checkIn(challenge);
+    },
+    [checkIn],
+  );
 
   return (
-    <div className="bg">
+    // No animated background while the camera is open — DESIGN.md §6.
+    <div className="bg" data-camera={scanning ? "true" : "false"}>
       <div className="page">
         <TopNav />
 
@@ -58,15 +72,31 @@ export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | n
             <EventTitle />
             <DateBlock />
 
-            <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            <div style={{ display: "flex", gap: "var(--s-3)", alignItems: "center" }}>
               <ConnectButton showBalance={false} chainStatus="icon" />
+              <Link href="/checkin" className="pill">
+                Venue display ↗
+              </Link>
             </div>
 
             <RegistrationCard
               status={effective}
-              onRegister={() => setStatus("AUTHORIZING")}
-              onScan={() => setStatus("SCANNING")}
-              onCancel={() => setStatus("REGISTERED")}
+              error={error}
+              progress={progress}
+              connected={isConnected || Boolean(debugStatus)}
+              viewfinder={scanning ? <Scanner onChallenge={onChallenge} /> : null}
+              onRegister={() => {
+                setError(null);
+                void register();
+              }}
+              onScan={() => {
+                setError(null);
+                setScanning(true);
+              }}
+              onCancel={() => {
+                setScanning(false);
+                setStatus("REGISTERED");
+              }}
             />
 
             <AboutSection />

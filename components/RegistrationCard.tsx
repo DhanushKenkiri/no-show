@@ -24,6 +24,10 @@ type Props = {
   onTicket?: () => void;
   onReceipt?: () => void;
   error?: string | null;
+  /** The current step of a multi-stage write, so nothing looks frozen. */
+  progress?: string | null;
+  /** Nothing can be signed without a wallet; say so rather than failing on tap. */
+  connected?: boolean;
 };
 
 function StatusChip({ status }: { status: RegistrationStatus }) {
@@ -81,8 +85,14 @@ export function RegistrationCard({
   onTicket,
   onReceipt,
   error,
+  progress,
+  connected = true,
 }: Props) {
-  const actions = <CardActions {...{ status, onRegister, onScan, onCancel, onTicket, onReceipt }} />;
+  const actions = (
+    <CardActions
+      {...{ status, onRegister, onScan, onCancel, onTicket, onReceipt, connected }}
+    />
+  );
 
   return (
     <>
@@ -128,6 +138,16 @@ export function RegistrationCard({
           <p className="cardBody">$2 settled. Funds the food for people who showed.</p>
         )}
 
+        {progress && (
+          <p className="cardBody mono" aria-live="polite">
+            {progress}
+          </p>
+        )}
+
+        {!connected && status === "IDLE" && (
+          <p className="cardBody">Connect a wallet to register.</p>
+        )}
+
         {error && (
           <p className="cardBody warn" role="alert">
             {error}
@@ -150,11 +170,20 @@ function CardActions({
   onCancel,
   onTicket,
   onReceipt,
-}: Pick<Props, "status" | "onRegister" | "onScan" | "onCancel" | "onTicket" | "onReceipt">) {
+  connected = true,
+}: Pick<
+  Props,
+  "status" | "onRegister" | "onScan" | "onCancel" | "onTicket" | "onReceipt" | "connected"
+>) {
   if (status === "IDLE") {
     return (
       <div className="actions">
-        <button type="button" className="btn btnAccent" onClick={onRegister}>
+        <button
+          type="button"
+          className="btn btnAccent"
+          onClick={onRegister}
+          disabled={!connected}
+        >
           Register
         </button>
       </div>
