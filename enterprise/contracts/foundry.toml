@@ -1,0 +1,16 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+# bytecode_hash is left at the Foundry default ("ipfs") on purpose: Sourcify needs
+# the metadata hash embedded in the deployed bytecode to produce a full match.
+# The template shipped `metadata` and `metadata_hash` here, which Foundry 1.7.1
+# reports as UNKNOWN KEYS - they were silently doing nothing.
+bytecode_hash = "ipfs"
+use_literal_content = true  # embed full sources in metadata - Sourcify full match
+
+# Monad Configuration
+eth-rpc-url="https://testnet-rpc.monad.xyz"
+chain_id = 10143
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
