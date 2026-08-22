@@ -120,9 +120,20 @@ export function RegistrationCard({
         )}
 
         {status === "SCANNING" && (
-          <div className="viewfinder">
-            {viewfinder ?? "Point the camera at the venue screen"}
-          </div>
+          <>
+            <div className="viewfinder">
+              {viewfinder ?? "Point the camera at the venue screen"}
+            </div>
+            {/* The code lives on a different screen, and that is not obvious the
+                first time you open the camera and find nothing to point it at. */}
+            <p className="cardBody">
+              The code is on the venue screen — open{" "}
+              <a href="/checkin" target="_blank" rel="noreferrer">
+                /checkin
+              </a>{" "}
+              on the laptop at the front of the room and point your camera at it.
+            </p>
+          </>
         )}
 
         {status === "CHECKED_IN" && (
