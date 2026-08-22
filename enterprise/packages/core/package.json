@@ -7,20 +7,34 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-    "./store": { "types": "./dist/store/index.d.ts", "default": "./dist/store/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "default": "./dist/store/index.js"
+    }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "abi": "node scripts/gen-abi.mjs",
-    "test": "node --test --experimental-strip-types test/*.test.ts"
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "prepare": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@x402/core": "2.22.0",
     "@x402/evm": "2.22.0",
     "viem": "^2.55.19"
   },
-  "devDependencies": { "typescript": "^5" },
-  "engines": { "node": ">=20" }
+  "devDependencies": {
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

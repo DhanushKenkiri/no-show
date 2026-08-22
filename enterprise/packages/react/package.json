@@ -1,0 +1,48 @@
+{
+  "name": "@noshow/react",
+  "version": "0.1.0",
+  "description": "Drop-in React components for No-Show: registration card, QR scanner, venue display.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-css.mjs",
+    "prepare": "tsc -p tsconfig.json && node scripts/copy-css.mjs"
+  },
+  "dependencies": {
+    "@noshow/core": "0.1.0",
+    "jsqr": "1.4.0",
+    "qrcode": "1.5.4",
+    "@x402/core": "2.22.0",
+    "@x402/evm": "2.22.0"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "viem": "^2",
+    "wagmi": "^2"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19",
+    "react": "^19",
+    "typescript": "^5",
+    "viem": "^2.55.19",
+    "wagmi": "^2.19.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

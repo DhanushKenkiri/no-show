@@ -1,0 +1,130 @@
+/**
+ * @noshow/react tokens and component styles.
+ *
+ * Every value is a custom property, so integrators restyle by overriding tokens
+ * rather than forking components:
+ *
+ *   :root { --ns-accent: #ff5722; --ns-r-md: 4px; }
+ *
+ * No box-shadow anywhere. Structure comes from hairline borders and translucent
+ * fills, which survives on any background.
+ */
+:root {
+  --ns-bg: #0a0a0b;
+  --ns-surface-1: rgba(255, 255, 255, 0.045);
+  --ns-surface-2: rgba(255, 255, 255, 0.075);
+  --ns-surface-solid: #16161a;
+  --ns-border: rgba(255, 255, 255, 0.09);
+  --ns-border-strong: rgba(255, 255, 255, 0.16);
+  --ns-text: #ffffff;
+  --ns-text-2: rgba(255, 255, 255, 0.64);
+  --ns-text-3: rgba(255, 255, 255, 0.42);
+  --ns-text-on-light: #0a0a0b;
+  --ns-accent: #836ef9;
+  --ns-live: #ff8a3d;
+  --ns-ok: #35c26a;
+  --ns-warn: #e5484d;
+  --ns-r-sm: 8px;
+  --ns-r-md: 12px;
+  --ns-r-pill: 999px;
+  --ns-s-1: 4px;  --ns-s-2: 8px;  --ns-s-3: 12px;
+  --ns-s-4: 16px; --ns-s-5: 24px; --ns-s-6: 32px; --ns-s-8: 64px;
+  --ns-t-card: 22px;
+  --ns-t-body: 15px;
+  --ns-t-hero: 19px;
+  --ns-t-label: 13px;
+  --ns-tap: 48px;
+}
+
+.ns-card {
+  background: var(--ns-surface-1);
+  border: 1px solid var(--ns-border);
+  border-radius: var(--ns-r-md);
+  padding: var(--ns-s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ns-s-4);
+  color: var(--ns-text);
+}
+.ns-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ns-s-3); }
+.ns-avatar {
+  width: 40px; height: 40px; border-radius: var(--ns-r-pill);
+  object-fit: cover; background: var(--ns-surface-2); display: block; flex: none;
+}
+.ns-heading { font-size: var(--ns-t-card); font-weight: 600; letter-spacing: -0.015em; margin: 0; }
+.ns-body { font-size: var(--ns-t-body); line-height: 1.45; color: var(--ns-text-2); margin: 0; }
+.ns-hero { font-size: var(--ns-t-hero); line-height: 1.6; color: var(--ns-text); margin: 0; }
+.ns-hero strong { color: var(--ns-ok); font-weight: 600; }
+.ns-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: var(--ns-t-label); }
+
+.ns-chip { display: inline-flex; align-items: center; gap: var(--ns-s-2); font-size: var(--ns-t-label); color: var(--ns-text-2); }
+.ns-dot { width: var(--ns-s-2); height: var(--ns-s-2); border-radius: var(--ns-r-pill); background: currentColor; flex: none; }
+.ns-live { color: var(--ns-live); }
+.ns-ok { color: var(--ns-ok); }
+.ns-warn { color: var(--ns-warn); }
+
+.ns-actions { display: flex; gap: var(--ns-s-3); flex-wrap: wrap; }
+.ns-btn {
+  min-height: var(--ns-tap); padding: 0 var(--ns-s-5);
+  border-radius: var(--ns-r-sm); border: 1px solid transparent;
+  font-size: var(--ns-t-body); font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--ns-s-2); flex: 1 1 auto; font-family: inherit;
+}
+.ns-btn-accent { background: var(--ns-accent); color: var(--ns-text); }
+.ns-btn-light { background: var(--ns-text); color: var(--ns-text-on-light); }
+.ns-btn-ghost { background: var(--ns-surface-2); color: var(--ns-text); border-color: var(--ns-border); }
+.ns-btn:disabled { opacity: 0.55; cursor: default; }
+
+.ns-viewfinder {
+  width: 100%; aspect-ratio: 1 / 1; border-radius: var(--ns-r-md);
+  border: 1px solid var(--ns-border-strong); background: var(--ns-surface-solid);
+  display: grid; place-items: center; color: var(--ns-text-3);
+  font-size: var(--ns-t-label); overflow: hidden;
+}
+.ns-viewfinder video { width: 100%; height: 100%; object-fit: cover; }
+
+.ns-spinner {
+  width: var(--ns-s-4); height: var(--ns-s-4); border-radius: var(--ns-r-pill);
+  border: 2px solid var(--ns-border-strong); border-top-color: var(--ns-accent);
+  animation: ns-spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes ns-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ns-spinner { animation-duration: 2s; } }
+
+.ns-venue {
+  min-height: 100dvh; background: var(--ns-bg); color: var(--ns-text);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--ns-s-5); padding: var(--ns-s-5);
+}
+.ns-venue-qr-wrap { position: relative; display: grid; place-items: center; }
+.ns-venue-qr {
+  width: min(78vmin, 720px); height: min(78vmin, 720px);
+  border-radius: var(--ns-r-md); background: var(--ns-text);
+  image-rendering: pixelated; display: block;
+}
+.ns-venue-placeholder {
+  display: grid; place-items: center; background: var(--ns-surface-solid);
+  color: var(--ns-text-3); font-size: var(--ns-t-body); image-rendering: auto;
+}
+.ns-venue-ring {
+  position: absolute; right: calc(var(--ns-s-5) * -1); bottom: calc(var(--ns-s-5) * -1);
+  width: var(--ns-s-8); height: var(--ns-s-8);
+}
+.ns-venue-meta { display: flex; align-items: center; gap: var(--ns-s-5); flex-wrap: wrap; justify-content: center; color: var(--ns-text-2); font-size: var(--ns-t-body); }
+.ns-venue-block { font-size: var(--ns-t-card); color: var(--ns-text); }
+.ns-venue-caption { font-size: var(--ns-t-body); color: var(--ns-text-3); margin: 0; text-align: center; }
+
+.ns-commit {
+  display: inline-flex; align-items: center; gap: var(--ns-s-3);
+  border: 1px solid var(--ns-border); border-radius: var(--ns-r-pill);
+  background: var(--ns-surface-2); padding: var(--ns-s-2) var(--ns-s-4);
+  align-self: flex-start; color: var(--ns-text-3);
+}
+.ns-commit-dots { display: inline-flex; gap: var(--ns-s-1); }
+.ns-commit-dot {
+  width: var(--ns-s-2); height: var(--ns-s-2); border-radius: var(--ns-r-pill);
+  background: var(--ns-border-strong); transition: background 120ms linear;
+}
+.ns-commit-dot.ns-on { background: var(--ns-ok); }
+.ns-commit-label { font-size: var(--ns-t-label); color: var(--ns-text-2); }

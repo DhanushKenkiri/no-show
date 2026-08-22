@@ -39,3 +39,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+
+# Package build output — rebuilt by each package's prepare script on install.
+dist/
