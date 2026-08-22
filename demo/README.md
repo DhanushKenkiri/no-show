@@ -1,56 +1,59 @@
 <!-- ![No-Show demo](docs/demo.gif) -->
 <!-- TODO: record the GIF — register on /, scan /checkin from a phone, card flips green -->
 
-# No-Show
+# No-Show — demo
 
-**Registering for an event authorises a small hold that is never charged if you turn
-up — and check-in is proven by landing a signed transaction inside a 1.2-second
-window against a code derived from the block number.**
+The Monad Blitz Hyderabad build. One event, one page, working end to end.
+
+**Registering authorises a hold that is never charged if you turn up — and
+attendance is proven by landing a signed transaction inside a ~1.2-second window
+against a code derived from the block number.**
+
+> Looking for the SDK that platforms integrate? That's [`../enterprise/`](../enterprise/).
 
 | | |
 |---|---|
+| Live | https://no-show-weld.vercel.app |
 | Contract | [`0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2`](https://testnet.monadvision.com/address/0x6a9ce96a097d5e8588E8F5a2B3Ea5bB20F5Da7C2) |
-| Network | Monad Testnet (10143) |
+| Network | Monad Testnet (`10143`) |
 | Verification | Sourcify `exact_match` |
-| Live URL | **https://no-show-weld.vercel.app** |
-| Venue display | https://no-show-weld.vercel.app/checkin |
-| Organiser | https://no-show-weld.vercel.app/manage |
 
 ---
 
-## This was built before
+## The pitch
 
-Kickback ran deposit-to-RSVP at DevCon, EthCC and ETHNewYork in 2018–19, and it
-stalled for two specific reasons that are both recorded in their own repository:
-organisers found that demanding a stake was a barrier to entry, and check-in was
-done off-chain by admins with a laptop, which meant a human decided who showed up.
-This is not a new idea — it is those two things fixed.
+Kickback ran deposit-to-RSVP in 2018–19 and it stalled for two reasons, both in
+their own repo: demanding a stake was a barrier to entry, and check-in was done
+off-chain by an admin with a laptop. Don't pitch this as a new idea — pitch it as
+the fix.
 
-### Fix one: the barrier
+**Fix one, the barrier.** x402's `upto` scheme means you sign a maximum, not a
+payment. Show up and it settles for **zero, with no on-chain transaction at all**.
 
-x402's `upto` scheme means you sign a **maximum, not a payment**. Show up and it
-settles for **zero, with no on-chain transaction at all** — your money never moved.
-It is a card hold, not a deposit.
-
-### Fix two: the admin
-
-The check-in challenge is `keccak256(eventId, block.number / 3)`, evaluated on
-chain. A claim is only valid inside a 3-block window, which on Monad is about 1.2
-seconds. Nobody ticks you off a list. The contract compares one value, and that
-single comparison is the entire anti-farming mechanism — it only works because
-blocks are 400ms.
+**Fix two, the admin.** The challenge is `keccak256(eventId, block.number / 3)`,
+checked on chain. Only valid for 3 blocks — about 1.2 seconds at Monad's 400ms
+blocks. Nobody decides; the contract compares one value, and that single comparison
+is the entire anti-farming mechanism.
 
 ---
 
-## How it runs
+## Routes
 
 | Route | Who | What |
 |---|---|---|
 | `/` | attendee | Event page. Register, then scan to check in. |
-| `/checkin` | venue | Fullscreen rotating QR, countdown ring, block number. Laptop. |
+| `/checkin` | venue | Fullscreen rotating QR, countdown ring, block number. Put this on a laptop. |
 | `/manage` | organiser | Live guest list, stat bar, finalize. |
 | `/api/register` | — | x402 `upto` authorisation intake |
-| `/api/checkin` | — | verifies the mined check-in, settles the hold for $0 |
+| `/api/checkin` | — | verifies a mined check-in, settles the hold for zero |
+
+Add `?debug=IDLE` (or `AUTHORIZING`, `REGISTERED`, `SCANNING`, `CHECKED_IN`,
+`NO_SHOW`) to `/` to force any card state without running the flow — that's how the
+screenshots get taken.
+
+---
+
+## Run it
 
 ```bash
 npm install
@@ -58,76 +61,137 @@ cp .env.example .env.local     # set NEXT_PUBLIC_NOSHOW_ADDRESS
 npm run build && npm start
 ```
 
-Contract work lives in `contracts/` — `forge test` covers registration, the check-in
-window, double check-in, finalize and payout. `npm run smoke -- <address>` prints
-`currentChallenge()` twice two seconds apart so you can watch it rotate.
+**You only need MON**, from [faucet.monad.xyz](https://faucet.monad.xyz). It pays
+gas, and the hold is in Wrapped MON — the app wraps what it needs on your first
+registration and it unwraps whenever you want.
 
-**All you need is MON**, from [faucet.monad.xyz](https://faucet.monad.xyz). It pays
-gas, and the hold is denominated in Wrapped MON — the app wraps what it needs for
-you on first registration, and it unwraps again whenever you want.
+### The demo, for real
+
+1. **Laptop** → `/checkin`, fullscreen.
+2. **Phone** → `/`, connect MetaMask, tap **Register**.
+   It checks your balance, wraps MON, approves Permit2 once, signs the hold, and
+   records it on chain. The first two steps only ever happen once per wallet.
+3. Tap **Check in** and point the phone at the laptop screen.
+
+> The camera needs HTTPS, so use the deployed URL on the phone. `localhost` counts
+> as secure, so a laptop webcam works locally.
+
+---
+
+## Layout
+
+```
+demo/
+├── app/
+│   ├── page.tsx            the event page (?debug= lives here)
+│   ├── checkin/            venue display
+│   ├── manage/             organiser dashboard
+│   ├── api/register/       x402 402 → verify → store hold
+│   ├── api/checkin/        verify receipt → settle for zero
+│   └── tokens.css          every colour and size in the app
+├── components/
+│   ├── RegistrationCard    one card, six states, one `status` prop
+│   ├── Scanner             BarcodeDetector, jsQR fallback
+│   ├── VenueDisplay        rotating QR + countdown ring
+│   ├── CommitPill          Proposed / Voted / Finalized
+│   └── NetworkGuard        switches the wallet to Monad automatically
+├── lib/
+│   ├── chain.ts            viem client for Monad Testnet
+│   ├── x402.ts             server: requirements, verify, settle
+│   ├── x402-client.ts      browser: Permit2, wrapping, signing
+│   ├── gas.ts              measured limits, and why they are hardcoded
+│   └── useNoShow.ts        the whole attendee flow
+└── contracts/
+    ├── src/NoShow.sol      single event, single admin
+    └── test/NoShow.t.sol   8 tests
+```
+
+### Ground truth documents
+
+`CLAUDE.md`, `MONAD.md`, `X402.md`, `SPEC.md` and `DESIGN.md` are the build's source
+of truth for network details, SDK versions, product scope and the visual system.
+Where they and this README disagree, they win.
+
+---
+
+## Contract
+
+```solidity
+register(bytes32 eventId, uint40 holdUsdc, bytes32 authRef)
+checkIn(bytes32 eventId, bytes32 challenge)   // reverts StaleChallenge outside the window
+finalize(bytes32 eventId, address[] noShows)  // organiser only
+payout(bytes32 eventId, address[] recipients, uint40 amountEach)
+screen(bytes32 eventId, address who)          // everything one screen needs
+```
+
+`Attendee` packs into a single 32-byte slot — 18 bytes used, proven with
+`forge inspect NoShow storageLayout --json` rather than counted by hand.
+
+```bash
+cd contracts && forge test          # 8 tests
+cd .. && npm run smoke -- <address> # prints currentChallenge() twice, 2s apart
+```
+
+`npm run smoke` exits non-zero if the challenge does *not* rotate — at 400ms blocks
+two seconds is roughly five blocks, so a match would mean the anti-farming window
+is not working.
+
+Deploy and verification commands are in [DEPLOY.md](DEPLOY.md). Note the bare
+Sourcify command from MONAD.md fails; the working one is documented there.
+
+---
+
+## Things that will bite you
+
+Collected from actually hitting them.
+
+**MON is not USDC.** Early versions denominated the hold in testnet USDC, and
+nobody could fund it — Circle's faucet gives 1 USDC per pair every two hours. `upto`
+settles through Permit2, and Permit2 moves any ERC-20, so the asset was never fixed
+by the protocol. Verified against the live facilitator: an `upto` authorisation for
+WMON returns `isValid: true`.
+
+**MetaMask cannot sign a detached transaction.** `eth_signTransaction` is not
+implemented, only `personal_sign` and `eth_signTypedData_v4`. So the attendee's
+wallet *sends* `checkIn` and posts the hash; the server verifies the receipt. Any
+design where the browser hands a serialised signed transaction to a server to
+broadcast cannot work with an injected wallet.
+
+**A blank env var is worse than a missing one.** `NEXT_PUBLIC_WC_PROJECT_ID=` is an
+empty string, not `undefined`, so `??` passes it straight through and RainbowKit
+throws during prerender. `lib/config.ts` uses `||` and degrades instead.
+
+**Never estimate gas on the check-in path.** `cast send` estimates before
+broadcasting, and that one extra round trip made three consecutive attempts fail
+with `StaleChallenge` before the transaction was even signed.
+
+**Monad charges the gas limit.** A reverted `checkIn` at a 200,000 limit reported
+`gasUsed: 200000`. A receipt cannot tell you your margin, so a successful
+transaction at a given limit is the only real evidence a limit is high enough.
+
+**`/manage` never backfills.** Rows come from an `eth_subscribe` subscription
+because the public RPC caps `eth_getLogs` at 100 blocks. Open it *before*
+registrations start, or the list looks empty while the counters stay correct.
 
 ---
 
 ## Honest limitations
 
-**The challenge proves liveness, not presence.** `currentChallenge` is a pure
-function of the event id and the block number, and both are public — so anyone,
-anywhere, can compute the current code without ever seeing the venue screen. What
-the contract actually enforces is that a check-in **landed inside a 1.2-second
-window**, so it cannot be batched, backdated or done in advance. That is a real
-property and it is the one worth claiming. Proving physical presence would need the
-venue to inject a secret the contract can verify, which this design does not do.
+**The challenge proves liveness, not presence.** It is a pure function of public
+inputs, so anyone anywhere can compute the current code without seeing the screen.
+What is enforced is that a check-in landed inside a ~1.2-second window — it cannot
+be batched or backdated. Say that version on stage.
 
-**The venue display shows the next window, not the live one.** This is not a
-stylistic choice. A check-in sent with no gas estimation, a pre-warmed nonce and a
-locally computed challenge still mined 3 blocks after the block its challenge came
-from, and reverted `StaleChallenge` with the full gas limit charged. All three
-public RPCs measure 275–300ms round trip. Aiming one window ahead makes a scan land
-in the window it was always going to land in. `NEXT_PUBLIC_VENUE_LEAD` tunes it.
-
-**The hold is in Wrapped MON, not USDC.** X402.md describes testnet USDC and that is
-what this first used, but faucet.circle.com only gives 1 USDC per pair every two
-hours while the Monad faucet hands out MON freely — and a demo nobody can fund is
-not a demo. `upto` settles through Permit2, and Permit2 works with any ERC-20, so
-the asset was never fixed to USDC by the protocol. This was checked against the live
-facilitator rather than assumed: an `upto` authorisation for WMON returns
-`isValid: true` from `POST /verify`. Switching back is a one-line change in
-`lib/x402-constants.ts`.
-
-**Charging a no-show is a trusted action.** `finalize` is called by the organiser.
-Check-in itself is not trusted — that is the point of the challenge.
-
-**The facilitator is a third party, but it cannot redirect funds.** The
-authorisation cryptographically binds the recipient address, so neither the server
-nor the facilitator can settle to anywhere else. An unreleased authorisation simply
-expires; there is no refund transaction because the money never moved.
+**The venue display shows the next window.** A check-in with everything optimised
+still mined three blocks late and reverted. All public RPCs are 275–300ms away, so
+the display aims one window ahead. Tunable with `NEXT_PUBLIC_VENUE_LEAD`.
 
 **Holds live in a module-level Map.** No database, per spec. That does not survive a
-serverless cold start, so a check-in can be real on chain while the $0 settlement is
-skipped — `/api/checkin` returns `202` and says so explicitly rather than reporting
-a false failure.
+serverless cold start, so a check-in can be real on chain while the settlement is
+skipped — `/api/checkin` returns `202` and says so rather than reporting a false
+failure. [`../enterprise/`](../enterprise/) fixes this with a real store.
 
-**One address is deployer, contract admin and x402 payee.** A hackathon
-simplification. In anything real these are three keys.
+**`finalize` is trusted.** The organiser calls it. Check-in is not trusted.
 
-**`/manage` never backfills.** Rows come from an `eth_subscribe` subscription,
-because the public RPC caps `eth_getLogs` at 100 blocks. The page therefore only
-shows events from the moment it connects; totals are read from contract state and
-stay correct regardless.
-
-**Gas limits are hardcoded and measured, never estimated.** Monad charges the gas
-*limit*, not the usage — a reverted check-in at a 200,000 limit consumed and
-charged all 200,000. Worse, an `eth_estimateGas` round trip does not fit inside the
-1.2-second window; three attempts died with `StaleChallenge` before the transaction
-was even signed. See `lib/gas.ts` for the measurements and their dates.
-
----
-
-## Stack
-
-Next.js 15 · TypeScript · viem · RainbowKit · Foundry (Monad) · `@x402/*` pinned to
-exactly `2.22.0`.
-
-That pin is load-bearing. `@x402/evm@2.22.0` requires `@x402/core@~2.22.0` while the
-2.23 line requires `~2.23.0`; mixing them installs two copies of the core registry
-and payments fail at settlement with no clear error.
+**One address is deployer, admin and payee.** A hackathon simplification; in
+anything real these are three keys.
