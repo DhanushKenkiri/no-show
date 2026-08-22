@@ -135,7 +135,7 @@ export function AboutSection() {
       <SectionHeading>About Event</SectionHeading>
       <div className="prose">
         <p>
-          Registering holds $2. Turn up and it is released for zero — your money never
+          Registering holds 0.5 MON. Turn up and it is released for zero — your money never
           moves, because no transaction is ever written.
         </p>
         <h3>🎟️ How check-in works</h3>

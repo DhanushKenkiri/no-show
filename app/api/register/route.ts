@@ -10,7 +10,7 @@ import {
 } from "@/lib/holds";
 import {
   getPaymentRequired,
-  HOLD_PRICE_USDC,
+  HOLD_DISPLAY_6DP,
   verifyRegistration,
 } from "@/lib/x402";
 
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
         reused: true,
         payer: getAddress(payer),
         authRef: existing.authRef,
-        holdUsdc: Math.floor(HOLD_PRICE_USDC * 1_000_000).toString(),
+        holdUsdc: HOLD_DISPLAY_6DP.toString(),
         settlement: "pending",
       },
       { headers: { "cache-control": "no-store" } },
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       registered: true,
       payer: getAddress(payer),
       authRef,
-      holdUsdc: Math.floor(HOLD_PRICE_USDC * 1_000_000).toString(),
+      holdUsdc: HOLD_DISPLAY_6DP.toString(),
       settlement: "pending",
     },
     { headers: { "cache-control": "no-store" } },

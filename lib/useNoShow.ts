@@ -4,15 +4,19 @@ import { useCallback, useEffect, useState } from "react";
 import { formatUnits, type Hex } from "viem";
 import { useAccount, useWalletClient } from "wagmi";
 import { publicClient } from "@/lib/chain";
-import { CHALLENGE_BLOCKS, EVENT_ID, HOLD_USDC_6DP } from "@/lib/config";
+import { CHALLENGE_BLOCKS, EVENT_ID } from "@/lib/config";
+import { HOLD_DISPLAY_6DP } from "@/lib/x402-constants";
 import { noShowAbi, requireAddress, STATUS } from "@/lib/contract";
 import { GAS } from "@/lib/gas";
 import type { RegistrationStatus } from "@/lib/registration";
 import {
+  HOLD_AMOUNT_WEI,
+  HOLD_ASSET_SYMBOL,
+  holdAssetBalance,
   needsPermit2Approval,
   permit2ApprovalTx,
   signPaymentHeader,
-  usdcBalance,
+  wrapNative,
 } from "@/lib/x402-client";
 
 /** Map the contract's status byte onto the card's states — DESIGN.md §5. */
@@ -25,14 +29,15 @@ function statusFromChain(status: number): RegistrationStatus {
 
 export type Progress =
   | null
-  | "Checking your USDC balance…"
+  | "Checking your balance…"
+  | "Wrapping MON so it can be held…"
   | "Checking Permit2 allowance…"
   | "Approve Permit2 (one time)…"
   | "Requesting payment terms…"
   | "Sign the hold — no money moves…"
   | "Recording registration on chain…"
   | "Submitting check-in…"
-  | "Releasing hold for $0…";
+  | "Releasing hold for zero…";
 
 export function useNoShow() {
   const { address, isConnected } = useAccount();
@@ -83,18 +88,31 @@ export function useNoShow() {
     setStatus("AUTHORIZING");
 
     try {
-      // 0. Do we hold enough USDC to back the hold at all?
-      //    MON is the gas token and is irrelevant here. Without this check the
-      //    facilitator rejects at /verify and the reason is unrecoverable from
-      //    the response.
-      setProgress("Checking your USDC balance…");
-      const balance = await usdcBalance(address);
-      if (balance < BigInt(HOLD_USDC_6DP)) {
-        throw new Error(
-          `You hold ${formatUnits(balance, 6)} USDC but the hold needs $2. ` +
-            "Note MON is the gas token, not this — claim testnet USDC at " +
-            "faucet.circle.com with Monad Testnet selected.",
-        );
+      // 0. Can this wallet back the hold at all? The facilitator checks exactly
+      //    this at /verify, and its rejection is far less legible than ours.
+      setProgress("Checking your balance…");
+      let balance = await holdAssetBalance(address);
+
+      if (balance < HOLD_AMOUNT_WEI) {
+        // Permit2 moves ERC-20s, and native MON is not one — so top up the
+        // wrapped balance from the native balance rather than failing. This is
+        // reversible: WMON unwraps back to MON whenever they want.
+        const shortfall = HOLD_AMOUNT_WEI - balance;
+        const native = await publicClient.getBalance({ address });
+
+        // Leave headroom for gas on this and the transactions that follow.
+        if (native < shortfall + 10_000_000_000_000_000n) {
+          throw new Error(
+            `You need ${formatUnits(HOLD_AMOUNT_WEI, 18)} ${HOLD_ASSET_SYMBOL} for the hold ` +
+              `plus a little for gas, but hold ${formatUnits(native, 18)} MON. ` +
+              "Top up at faucet.monad.xyz.",
+          );
+        }
+
+        setProgress("Wrapping MON so it can be held…");
+        const wrapHash = await wrapNative(wallet, address, shortfall);
+        await publicClient.waitForTransactionReceipt({ hash: wrapHash });
+        balance = await holdAssetBalance(address);
       }
 
       // 1. Permit2 approval. `upto` is Permit2-only; without this the facilitator
@@ -144,7 +162,7 @@ export function useNoShow() {
         address: requireAddress(),
         abi: noShowAbi,
         functionName: "register",
-        args: [EVENT_ID, HOLD_USDC_6DP, result.authRef as Hex],
+        args: [EVENT_ID, HOLD_DISPLAY_6DP, result.authRef as Hex],
         gas: GAS.REGISTER,
       });
       await publicClient.waitForTransactionReceipt({ hash });
@@ -185,7 +203,7 @@ export function useNoShow() {
           gas: GAS.CHECK_IN,
         });
 
-        setProgress("Releasing hold for $0…");
+        setProgress("Releasing hold for zero…");
         const response = await fetch("/api/checkin", {
           method: "POST",
           headers: { "content-type": "application/json" },

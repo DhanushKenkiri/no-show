@@ -27,8 +27,8 @@ This is not a new idea — it is those two things fixed.
 ### Fix one: the barrier
 
 x402's `upto` scheme means you sign a **maximum, not a payment**. Show up and it
-settles for **$0 with no on-chain transaction at all** — your money never moved. It
-is a card hold, not a deposit.
+settles for **zero, with no on-chain transaction at all** — your money never moved.
+It is a card hold, not a deposit.
 
 ### Fix two: the admin
 
@@ -60,10 +60,9 @@ Contract work lives in `contracts/` — `forge test` covers registration, the ch
 window, double check-in, finalize and payout. `npm run smoke -- <address>` prints
 `currentChallenge()` twice two seconds apart so you can watch it rotate.
 
-**You need two different tokens.** MON from [faucet.monad.xyz](https://faucet.monad.xyz)
-pays gas. The hold itself is denominated in USDC, from
-[faucet.circle.com](https://faucet.circle.com) with Monad Testnet selected. They are
-unrelated balances, and having MON does not mean you can register.
+**All you need is MON**, from [faucet.monad.xyz](https://faucet.monad.xyz). It pays
+gas, and the hold is denominated in Wrapped MON — the app wraps what it needs for
+you on first registration, and it unwraps again whenever you want.
 
 ---
 
@@ -83,6 +82,15 @@ locally computed challenge still mined 3 blocks after the block its challenge ca
 from, and reverted `StaleChallenge` with the full gas limit charged. All three
 public RPCs measure 275–300ms round trip. Aiming one window ahead makes a scan land
 in the window it was always going to land in. `NEXT_PUBLIC_VENUE_LEAD` tunes it.
+
+**The hold is in Wrapped MON, not USDC.** X402.md describes testnet USDC and that is
+what this first used, but faucet.circle.com only gives 1 USDC per pair every two
+hours while the Monad faucet hands out MON freely — and a demo nobody can fund is
+not a demo. `upto` settles through Permit2, and Permit2 works with any ERC-20, so
+the asset was never fixed to USDC by the protocol. This was checked against the live
+facilitator rather than assumed: an `upto` authorisation for WMON returns
+`isValid: true` from `POST /verify`. Switching back is a one-line change in
+`lib/x402-constants.ts`.
 
 **Charging a no-show is a trusted action.** `finalize` is called by the organiser.
 Check-in itself is not trusted — that is the point of the challenge.

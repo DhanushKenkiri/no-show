@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { RegistrationStatus } from "@/lib/registration";
+import { HOLD_ASSET_SYMBOL, HOLD_LABEL } from "@/lib/x402-constants";
 
 /**
  * The product. One card, six states, driven by a single `status` prop —
@@ -106,7 +107,7 @@ export function RegistrationCard({
 
         {status === "IDLE" && (
           <p className="cardBody">
-            Free. We hold $2 and release it the moment you check in.
+            Free. We hold {HOLD_LABEL} and release it the moment you check in.
           </p>
         )}
 
@@ -115,7 +116,7 @@ export function RegistrationCard({
         )}
 
         {status === "REGISTERED" && (
-          <p className="cardBody">Hold: $2 · released at check-in</p>
+          <p className="cardBody">Hold: {HOLD_LABEL} · released at check-in</p>
         )}
 
         {status === "SCANNING" && (
@@ -128,14 +129,17 @@ export function RegistrationCard({
           <>
             {/* The single most important string in the app — DESIGN.md §5. */}
             <p className="heroBody">
-              Hold released. <strong>$0 settled — no transaction was written.</strong>
+              Hold released.{" "}
+              <strong>0 {HOLD_ASSET_SYMBOL} settled — no transaction was written.</strong>
             </p>
             {commitPill}
           </>
         )}
 
         {status === "NO_SHOW" && (
-          <p className="cardBody">$2 settled. Funds the food for people who showed.</p>
+          <p className="cardBody">
+            {HOLD_LABEL} settled. Funds the food for people who showed.
+          </p>
         )}
 
         {progress && (

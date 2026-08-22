@@ -10,7 +10,12 @@ import {
 } from "@x402/evm/upto/client";
 import type { Address, Hex, WalletClient } from "viem";
 import { publicClient } from "@/lib/chain";
-import { MONAD_TESTNET_USDC, MONAD_X402_NETWORK } from "@/lib/x402-constants";
+import {
+  HOLD_AMOUNT_WEI,
+  HOLD_ASSET,
+  HOLD_ASSET_SYMBOL,
+  MONAD_X402_NETWORK,
+} from "@/lib/x402-constants";
 
 /**
  * The browser half of x402, which did not exist until now.
@@ -65,7 +70,7 @@ function toClientSigner(wallet: WalletClient, address: Address) {
  */
 export async function needsPermit2Approval(owner: Address): Promise<boolean> {
   const params = getPermit2AllowanceReadParams({
-    tokenAddress: MONAD_TESTNET_USDC,
+    tokenAddress: HOLD_ASSET,
     ownerAddress: owner,
   });
   const allowance = (await publicClient.readContract(params as never)) as bigint;
@@ -76,10 +81,10 @@ export async function needsPermit2Approval(owner: Address): Promise<boolean> {
 
 /** The one-time approval transaction. Send it with the connected wallet. */
 export function permit2ApprovalTx() {
-  return createPermit2ApprovalTx(MONAD_TESTNET_USDC);
+  return createPermit2ApprovalTx(HOLD_ASSET);
 }
 
-const erc20BalanceAbi = [
+const wrappedNativeAbi = [
   {
     name: "balanceOf",
     type: "function",
@@ -87,26 +92,54 @@ const erc20BalanceAbi = [
     inputs: [{ name: "account", type: "address" }],
     outputs: [{ type: "uint256" }],
   },
+  {
+    name: "deposit",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [],
+    outputs: [],
+  },
 ] as const;
 
 /**
- * The payer's testnet USDC balance, in 6dp base units.
+ * The payer's balance of the hold asset, in base units (18dp).
  *
- * Checked before anything is signed. The facilitator verifies the payer can
- * actually cover the authorised maximum, so a wallet holding no USDC gets rejected
- * at /verify — and the rejection reads as a vague verification failure rather than
- * "you have no USDC", which is a miserable thing to debug on a deadline.
- *
- * MON is NOT this. MON is the gas token; the hold is denominated in USDC, and the
- * two are unrelated balances. Testnet USDC comes from https://faucet.circle.com
- * with Monad Testnet selected.
+ * Checked before anything is signed. The facilitator verifies that the payer can
+ * actually cover the authorised maximum, so an underfunded wallet is rejected at
+ * /verify — and that rejection reads as a vague verification failure rather than
+ * "you do not hold enough", which is a miserable thing to debug on a deadline.
  */
-export async function usdcBalance(owner: Address): Promise<bigint> {
+export async function holdAssetBalance(owner: Address): Promise<bigint> {
   return publicClient.readContract({
-    address: MONAD_TESTNET_USDC,
-    abi: erc20BalanceAbi,
+    address: HOLD_ASSET,
+    abi: wrappedNativeAbi,
     functionName: "balanceOf",
     args: [owner],
+  });
+}
+
+export { HOLD_AMOUNT_WEI, HOLD_ASSET_SYMBOL };
+
+/**
+ * Wrap native MON into WMON.
+ *
+ * Permit2 can only move ERC-20s, and native MON is not one. Wrapping is a plain
+ * `deposit()` with value attached, and it is reversible at any time — WMON is the
+ * canonical wrapper from MONAD.md, not something this project invented.
+ */
+export async function wrapNative(
+  wallet: WalletClient,
+  address: Address,
+  amountWei: bigint,
+): Promise<Hex> {
+  return wallet.writeContract({
+    account: address,
+    chain: wallet.chain,
+    address: HOLD_ASSET,
+    abi: wrappedNativeAbi,
+    functionName: "deposit",
+    value: amountWei,
+    gas: 60_000n,
   });
 }
 

@@ -11,16 +11,22 @@ import type {
 import { UptoEvmScheme } from "@x402/evm/upto/server";
 import { ORGANISER_ADDRESS } from "@/lib/config";
 import {
-  HOLD_PRICE_USDC,
+  HOLD_ASSET,
+  HOLD_ASSET_DECIMALS,
+  HOLD_ASSET_SYMBOL,
+  HOLD_LABEL,
+  HOLD_PRICE,
   MONAD_FACILITATOR_URL,
   MONAD_X402_NETWORK,
 } from "@/lib/x402-constants";
 
 export {
   MONAD_X402_NETWORK,
-  MONAD_TESTNET_USDC,
   MONAD_FACILITATOR_URL,
-  HOLD_PRICE_USDC,
+  HOLD_ASSET,
+  HOLD_PRICE,
+  HOLD_DISPLAY_6DP,
+  HOLD_LABEL,
 } from "@/lib/x402-constants";
 
 /**
@@ -33,21 +39,29 @@ const HOLD_TIMEOUT_SECONDS = 60 * 60 * 24;
 const facilitator = new HTTPFacilitatorClient({ url: MONAD_FACILITATOR_URL });
 const server = new x402ResourceServer(facilitator);
 
-// Monad testnet USDC is not in the SDK's built-in asset table. Keep this parser
-// byte-for-byte equivalent in behaviour to the one prescribed in X402.md: Monad
-// USDC has 6 decimals and uses the EIP-712 domain "USDC" / version "2".
+// The hold asset is not in the SDK's built-in table — it never is for a testnet —
+// so the money parser declares it explicitly, exactly as X402.md prescribes. The
+// only departures from that example are the asset and its decimals: WMON has 18,
+// USDC has 6. See lib/x402-constants.ts for why the asset changed.
+//
+// The multiplication is done in BigInt. `amount * 10 ** 18` in floating point
+// silently loses precision above 2^53, which would produce an authorisation for a
+// subtly wrong number.
 const monadScheme = new UptoEvmScheme();
 monadScheme.registerMoneyParser(async (amount: number, network: string) => {
-  if (network === "eip155:10143") {
-    return {
-      amount: Math.floor(amount * 1_000_000).toString(),
-      asset: "0x534b2f3A21130d7a60830c2Df862319e593943A3",
-      extra: { name: "USDC", version: "2" },
-    };
-  }
-  return null;
+  if (network !== MONAD_X402_NETWORK) return null;
+
+  const scale = 10n ** BigInt(HOLD_ASSET_DECIMALS);
+  const whole = BigInt(Math.floor(amount));
+  const fraction = BigInt(Math.round((amount - Math.floor(amount)) * 1e6));
+
+  return {
+    amount: (whole * scale + (fraction * scale) / 1_000_000n).toString(),
+    asset: HOLD_ASSET,
+    extra: { name: HOLD_ASSET_SYMBOL, version: "1" },
+  };
 });
-server.register("eip155:10143", monadScheme);
+server.register(MONAD_X402_NETWORK, monadScheme);
 
 // `initialize` fetches /supported. In particular, it obtains the facilitator
 // address that the upto client must bind into its Permit2 witness.
@@ -66,7 +80,7 @@ export async function getRegistrationRequirements(): Promise<
     scheme: "upto",
     network: MONAD_X402_NETWORK,
     payTo: ORGANISER_ADDRESS,
-    price: HOLD_PRICE_USDC,
+    price: HOLD_PRICE,
     maxTimeoutSeconds: HOLD_TIMEOUT_SECONDS,
   });
 }
@@ -83,7 +97,7 @@ export async function getPaymentRequired(
     requirements,
     {
       url: request.url,
-      description: "Authorize a $2 No-Show event-registration hold",
+      description: `Authorize a ${HOLD_LABEL} No-Show event-registration hold`,
       mimeType: "application/json",
     },
     error,
@@ -120,8 +134,8 @@ export async function verifyRegistration(
 
   if (!verification.isValid || !verification.payer) {
     // Surface the facilitator's own reason. Swallowing it turns "the payer holds
-    // no USDC" into an unfalsifiable "could not be verified", which is the single
-    // most expensive kind of error message to debug.
+    // no balance" into an unfalsifiable "could not be verified", which is the
+    // single most expensive kind of error message to debug.
     throw new Error(
       verification.invalidReason ?? "The facilitator rejected the authorization.",
     );

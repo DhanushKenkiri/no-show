@@ -21,12 +21,12 @@ export const ORGANISER_ADDRESS: Address =
   "0xA02f986810602163f078e38488C6FE6756De606e";
 
 /**
- * WalletConnect Cloud project id, required by RainbowKit.
+ * WalletConnect Cloud project id.
  *
- * Free, from https://cloud.walletconnect.com. Set NEXT_PUBLIC_WC_PROJECT_ID in
- * .env.local AND in the Vercel project settings — a missing value there is a
- * silent "no wallets appear" on the deployed site, which is a horrible thing to
- * discover on stage.
+ * OPTIONAL. Injected wallets — the MetaMask extension, or the site opened inside
+ * MetaMask mobile's in-app browser — do not need it. Without one, lib/wagmi.ts
+ * drops the WalletConnect connector entirely rather than letting it fail noisily.
+ * Set it only if you want WalletConnect QR pairing.
  */
 // `||`, deliberately not `??`. An unset variable is undefined, but a variable that
 // is present and blank — `NEXT_PUBLIC_WC_PROJECT_ID=` in .env.local, or an empty
