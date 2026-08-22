@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Tokens are imported ahead of this file in app/layout.tsx. Nothing in here may
+   introduce a literal colour or size — see CLAUDE.md "Visual work". */
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}

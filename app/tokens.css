@@ -1,0 +1,45 @@
+/* app/tokens.css — the ONLY place a literal colour, radius or spacing value lives.
+   Everything else in the app references these variables. That rule is what makes
+   a late visual pass a one-file edit instead of a rewrite. See DESIGN.md §1.
+
+   Shadows: none. The reference builds structure from hairline borders and
+   translucent fills, not elevation. A box-shadow anywhere in this app is a bug. */
+
+:root {
+  /* surfaces — near-black, layered by translucent white */
+  --bg:            #0a0a0b;
+  --surface-1:     rgba(255, 255, 255, 0.045);   /* cards, tiles */
+  --surface-2:     rgba(255, 255, 255, 0.075);   /* hover, secondary button */
+  --surface-solid: #16161a;                      /* when translucency won't do */
+
+  /* borders — hairlines, almost invisible, doing all the structural work */
+  --border:        rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* text */
+  --text:          #ffffff;
+  --text-2:        rgba(255, 255, 255, 0.64);
+  --text-3:        rgba(255, 255, 255, 0.42);
+  --text-on-light: #0a0a0b;
+
+  /* accents */
+  --accent:        #836ef9;   /* Monad purple — the one brand colour */
+  --accent-soft:   rgba(131, 110, 249, 0.16);
+  --live:          #ff8a3d;   /* the LIVE dot, and only that */
+  --ok:            #35c26a;   /* checked in, hold released */
+  --warn:          #e5484d;   /* hold charged, errors */
+
+  /* radii */
+  --r-sm:  8px;    /* buttons, date tile */
+  --r-md:  12px;   /* cards, cover image, map */
+  --r-pill: 999px;
+
+  /* spacing — 4px base, use ONLY these */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+
+  /* layout */
+  --page-max:   1080px;
+  --rail:       340px;   /* left column on desktop */
+  --col-gap:    56px;
+}

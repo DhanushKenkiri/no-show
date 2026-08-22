@@ -1,0 +1,23 @@
+# Compiler files
+cache/
+
+# The Next.js app imports the NoShow ABI straight from the Foundry artifact
+# (CLAUDE.md: ABIs are never hand-written). Vercel has no Foundry toolchain, so
+# that one artifact has to be committed or the deployed build cannot resolve it.
+# Git cannot re-include a file whose parent directory is excluded, so the path is
+# un-ignored one level at a time.
+out/*
+!out/NoShow.sol/
+out/NoShow.sol/*
+!out/NoShow.sol/NoShow.json
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
