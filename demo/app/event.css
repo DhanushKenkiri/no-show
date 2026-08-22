@@ -607,3 +607,22 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* ---- network guard ---- */
+/* Shown only when the wallet is on the wrong chain. It should read as a step to
+   finish, not as a failure, so it uses the accent rather than the warn colour. */
+.networkGuard {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  padding: var(--s-4);
+  font-size: var(--t-meta);
+  line-height: var(--t-meta-lh);
+  color: var(--text);
+}
+.networkGuard span { flex: 1 1 240px; }
+.networkGuard .btn { flex: 0 0 auto; }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import type { Hex } from "viem";
 import { CommitPill } from "@/components/CommitPill";
+import { NetworkGuard, useWrongNetwork } from "@/components/NetworkGuard";
 import { RegistrationCard } from "@/components/RegistrationCard";
 import { Scanner } from "@/components/Scanner";
 import {
@@ -50,6 +51,9 @@ export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | n
     checkIn,
   } = useNoShow();
   const [scanning, setScanning] = useState(false);
+  // Registering on the wrong chain fails at the first write. Better to disable
+  // the button than to let it throw a decoded revert at someone.
+  const wrongNetwork = useWrongNetwork();
 
   // A forced state must never touch the chain — `?debug=` is for screenshots.
   const effective: RegistrationStatus = debugStatus ?? (scanning ? "SCANNING" : status);
@@ -89,11 +93,13 @@ export function EventPage({ debugStatus }: { debugStatus: RegistrationStatus | n
               </Link>
             </div>
 
+            <NetworkGuard />
+
             <RegistrationCard
               status={effective}
               error={error}
               progress={progress}
-              connected={isConnected || Boolean(debugStatus)}
+              connected={(isConnected && !wrongNetwork) || Boolean(debugStatus)}
               viewfinder={scanning ? <Scanner onChallenge={onChallenge} /> : null}
               commitPill={
                 receipt?.blockNumber ? (
