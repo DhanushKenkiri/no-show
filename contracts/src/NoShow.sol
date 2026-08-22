@@ -20,11 +20,12 @@ contract NoShow {
     ///      not by eyeballing byte counts.
     struct Attendee {
         uint40 registeredAt; //  5   unix seconds
-        uint40 checkedInAt;  //  5   0 = not yet
-        uint40 holdUsdc;     //  5   6dp, so 2_000_000 == $2.00
-        uint8 status;        //  1   see STATUS_* below
-        bool settled;        //  1   the x402 authorisation has been resolved either way
-    } //                     // 17 bytes used of 32
+        uint40 checkedInAt; //  5   0 = not yet
+        uint40 holdUsdc; //  5   6dp, so 2_000_000 == $2.00
+        uint8 status; //  1   see STATUS_* below
+        bool settled; //  1   the x402 authorisation has been resolved either way
+        bool paidOut; //  1   received a share of the charged no-show holds
+    } //                     // 18 bytes used of 32
 
     uint256 private constant CHALLENGE_BLOCKS = 3;
 
@@ -50,6 +51,7 @@ contract NoShow {
     event Registered(bytes32 indexed eventId, address indexed who, uint40 holdUsdc, bytes32 authRef);
     event CheckedIn(bytes32 indexed eventId, address indexed who, uint40 at);
     event HoldCharged(bytes32 indexed eventId, address indexed who, uint40 amount);
+    event PaidOut(bytes32 indexed eventId, address indexed who, uint40 amount);
 
     error NotRegistered();
     error AlreadyRegistered();
@@ -140,6 +142,40 @@ contract NoShow {
         }
 
         closed[eventId] = true;
+    }
+
+    /**
+     * @notice Record that attendees who showed up have been paid their share of the
+     *         charged no-show holds.
+     * @dev This contract never custodies USDC — x402 settles straight to the
+     *      organiser's address — so it cannot move the money itself. The transfer is
+     *      an EOA-side send; this function is the on-chain record of it, so /manage
+     *      and the receipt view have a source of truth that is not a server's memory.
+     *
+     *      Call it AFTER the transfer settles. Recording a payout that then fails to
+     *      send leaves a row claiming money that never arrived.
+     *
+     *      Addresses that did not check in, or that were already paid, are skipped
+     *      rather than reverting, so the batch is idempotent and one bad entry cannot
+     *      brick the call.
+     */
+    function payout(bytes32 eventId, address[] calldata recipients, uint40 amountEach) external {
+        if (msg.sender != admin) revert NotOrganiser();
+
+        uint256 len = recipients.length;
+        for (uint256 i = 0; i < len;) {
+            address who = recipients[i];
+            Attendee storage a = attendees[eventId][who];
+
+            if (a.status == STATUS_CHECKED_IN && !a.paidOut) {
+                a.paidOut = true;
+                emit PaidOut(eventId, who, amountEach);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /// @notice Everything the attendee's screen needs, in one call.

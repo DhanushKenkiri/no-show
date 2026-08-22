@@ -2,9 +2,12 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-metadata = true
-metadata_hash = "none"  # disable ipfs
-use_literal_content = true # use source code
+# bytecode_hash is left at the Foundry default ("ipfs") on purpose: Sourcify needs
+# the metadata hash embedded in the deployed bytecode to produce a full match.
+# The template shipped `metadata` and `metadata_hash` here, which Foundry 1.7.1
+# reports as UNKNOWN KEYS - they were silently doing nothing.
+bytecode_hash = "ipfs"
+use_literal_content = true  # embed full sources in metadata - Sourcify full match
 
 # Monad Configuration
 eth-rpc-url="https://testnet-rpc.monad.xyz"

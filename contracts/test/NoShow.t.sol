@@ -16,6 +16,7 @@ contract NoShowTest is Test {
     event Registered(bytes32 indexed eventId, address indexed who, uint40 holdUsdc, bytes32 authRef);
     event CheckedIn(bytes32 indexed eventId, address indexed who, uint40 at);
     event HoldCharged(bytes32 indexed eventId, address indexed who, uint40 amount);
+    event PaidOut(bytes32 indexed eventId, address indexed who, uint40 amount);
 
     function setUp() public {
         noShow = new NoShow(ADMIN);
@@ -106,5 +107,57 @@ contract NoShowTest is Test {
         (NoShow.Attendee memory a,,) = noShow.screen(EVENT_ID, ATTENDEE);
         assertEq(a.status, noShow.STATUS_NO_SHOW());
         assertTrue(a.settled);
+    }
+
+    /// payout marks a checked-in attendee as paid and emits PaidOut
+    function test_Payout_MarksPaidAndEmits() public {
+        _register(ATTENDEE);
+
+        bytes32 challenge = noShow.currentChallenge(EVENT_ID);
+        vm.prank(ATTENDEE);
+        noShow.checkIn(EVENT_ID, challenge);
+
+        address[] memory recipients = new address[](1);
+        recipients[0] = ATTENDEE;
+
+        vm.expectEmit(true, true, false, true);
+        emit PaidOut(EVENT_ID, ATTENDEE, 500_000);
+
+        vm.prank(ADMIN);
+        noShow.payout(EVENT_ID, recipients, 500_000);
+
+        (NoShow.Attendee memory a,,) = noShow.screen(EVENT_ID, ATTENDEE);
+        assertTrue(a.paidOut);
+    }
+
+    /// payout is idempotent — a second call does not double-pay
+    function test_Payout_Twice_DoesNotDoublePay() public {
+        _register(ATTENDEE);
+
+        bytes32 challenge = noShow.currentChallenge(EVENT_ID);
+        vm.prank(ATTENDEE);
+        noShow.checkIn(EVENT_ID, challenge);
+
+        address[] memory recipients = new address[](1);
+        recipients[0] = ATTENDEE;
+
+        vm.prank(ADMIN);
+        noShow.payout(EVENT_ID, recipients, 500_000);
+
+        // Second call must emit nothing at all.
+        vm.recordLogs();
+        vm.prank(ADMIN);
+        noShow.payout(EVENT_ID, recipients, 500_000);
+        assertEq(vm.getRecordedLogs().length, 0, "second payout re-emitted");
+    }
+
+    /// payout by a non-organiser reverts NotOrganiser
+    function test_Payout_NotOrganiser_Reverts() public {
+        address[] memory recipients = new address[](1);
+        recipients[0] = ATTENDEE;
+
+        vm.prank(ATTENDEE);
+        vm.expectRevert(NoShow.NotOrganiser.selector);
+        noShow.payout(EVENT_ID, recipients, 500_000);
     }
 }
