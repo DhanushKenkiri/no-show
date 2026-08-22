@@ -1,0 +1,13 @@
+{
+  "name": "noshow-enterprise",
+  "private": true,
+  "version": "0.1.0",
+  "description": "No-Show SDK and hosted service",
+  "workspaces": ["packages/*", "service"],
+  "scripts": {
+    "build:packages": "npm run build -w @noshow/core && npm run build -w @noshow/adapters && npm run build -w @noshow/react",
+    "test": "npm run test -w @noshow/core && npm run test -w @noshow/adapters",
+    "abi": "node packages/core/scripts/gen-abi.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
